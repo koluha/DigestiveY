@@ -13,12 +13,12 @@ class Pagination {
         return $count;
     }
     
-     public function AllPageFilter($key_category,$name_filter, $var_filter,$popular_in=''){
+     public function AllPageFilter($key_category,$url_filter, $name_filter,$popular_in=''){
          $popular=($popular_in)?'AND p.i_popular=1':'';
-         $sql = "SELECT
-                   COUNT(*)
-                FROM tb_product as p
-                    WHERE (p.key_group_1 ='$key_category' OR p.key_group_2 ='$key_category' OR p.key_group_3 ='$key_category') $popular AND $name_filter='$var_filter'";
+          $sql = "SELECT COUNT(*)
+                    FROM tb_product as p
+                        INNER JOIN tb_f_$name_filter AS f ON f.id=p.f_id_$name_filter
+                        WHERE (p.key_group_1 ='$key_category' OR p.key_group_2 ='$key_category' OR p.key_group_3 ='$key_category') $popular AND f.url='$url_filter'";
         $count = Yii::app()->db->createCommand($sql)->queryScalar();
         return $count;
      }
@@ -48,10 +48,10 @@ class Pagination {
         return $pag;
     }
     
-    public function use_paginationfilter($id, $url, $page, $name_filter,$var_filter, $popular='') {
+    public function use_paginationfilter($id, $url, $page, $url_filter,$name_filter, $popular='') {
         $pag['page'] = $page;
         //общее кол-во записей продуктов
-        $pag['posts'] = $this->AllPageFilter($id,$name_filter,$var_filter,$popular);
+        $pag['posts'] = $this->AllPageFilter($id,$url_filter,$name_filter,$popular);
         
         //кол-во записей на странице
         $pag['num'] = Yii::app()->params['pagination_limit'];

@@ -24,27 +24,40 @@ class Product {
                     p.t_meta_title,
                     p.t_meta_keyword,
                     p.t_meta_description,
-                    p.f_fortress,
-                    p.f_volume,
                     p.d_desc_product,
-                    p.f_brand,
-                    p.f_country,
-                    p.f_region,
-                    p.f_type,
-                    p.f_class,
-                    p.f_alcohol,
-                    p.f_taste,
-                    p.f_sugar,
-                    p.f_grape_sort,
-                    p.f_vintage_year,
-                    p.f_color,
-                    p.f_excerpt,
-                    p.f_fortress,
-                    p.f_volume,
-                    p.f_packaging,
+                    brand.title as f_brand,
+                    country.title as f_country,
+                    region.title as f_region,
+                    type.title as f_type,
+                    class.title as f_class,
+                    alcohol.title as f_alcohol,
+                    taste.title as f_taste,
+                    sugar.title as f_sugar,
+                    grape_sort.title as f_grape_sort,
+                    vintage_year.title as f_vintage_year,
+                    color.title as f_color,
+                    excerpt.title as f_excerpt,
+                    fortress.title as f_fortress,
+                    volume.title as f_volume,
+                    packaging.title as f_packaging,
                     p.i_manufacturer_importer,
                     p. i_supplier
                 FROM tb_product as p 
+		    LEFT JOIN tb_f_brand AS brand ON brand.id=p.f_id_brand
+		    LEFT JOIN tb_f_country AS country ON country.id=p.f_id_country
+                    LEFT JOIN tb_f_region AS region ON region.id=p.f_id_region
+                    LEFT JOIN tb_f_type AS type ON type.id=p.f_id_type
+                    LEFT JOIN tb_f_class AS class ON class.id=p.f_id_class
+                    LEFT JOIN tb_f_alcohol AS alcohol ON alcohol.id=p.f_id_alcohol
+                    LEFT JOIN tb_f_taste AS taste ON taste.id=p.f_id_taste
+                    LEFT JOIN tb_f_sugar AS sugar ON sugar.id=p.f_id_sugar
+                    LEFT JOIN tb_f_grape_sort AS grape_sort ON grape_sort.id=p.f_id_grape_sort
+		    LEFT JOIN tb_f_vintage_year AS vintage_year ON vintage_year.id=p.f_id_vintage_year
+		    LEFT JOIN tb_f_color AS color ON color.id=p.f_id_color
+		    LEFT JOIN tb_f_excerpt AS excerpt ON excerpt.id=p.f_id_excerpt
+		    LEFT JOIN tb_f_fortress AS fortress ON fortress.id=p.f_id_fortress
+                    LEFT JOIN tb_f_volume AS volume ON volume.id=p.f_id_volume
+                    LEFT JOIN tb_f_packaging AS packaging ON packaging.id=p.f_id_packaging
                 WHERE p.t_url='$url'";
         $res = Yii::app()->db->createCommand($sql)->queryRow();
         return $res;

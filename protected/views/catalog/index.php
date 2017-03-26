@@ -113,10 +113,58 @@ if ($data['categories']) {
         <ul class="filter_ul">
             <?php
             //В сессию записать ид категорий
-            //$filters = ModelCatalog::listFilters(1);
-           // echo '<pre>';
-            //print_r($filters);
+            //$filters = ModelCatalog::listFilters($data['categories']['parent_id']);
+            //echo '<pre>';
+            //print_r($data);
+            //echo '<pre>';
 
+            ?>
+            
+            
+              <ul class="filter_ul">
+                            <li>
+                                <button  class="filtr_ul_button">
+                                    <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Брэнд</span>
+                                </button>
+                                <ul class="filter_options">
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
+                                            <span class="name"><font><font class="">Клод Шателье</font></font></span>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
+                                            <span class="name"><font><font>Конт Джозеф</font></font></span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <button class="filtr_ul_button">
+                                    <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Страна</span>
+                                </button>
+                                <ul class="filter_options">
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
+                                            <span class="name"><font><font class="">Франция</font></font></span>
+                                        </label>
+                                    </li>
+                                    <li>
+                                        <label>
+                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
+                                            <span class="name"><font><font>Россия</font></font></span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+            
+            
+            
+            <?php
             //Формируем массив для вывода
             //    foreach ($filters as $key => $filtr) {
             //        $endfilters[$filtr['name_spec']][] = array('val_id' => $filtr['id_spec'],

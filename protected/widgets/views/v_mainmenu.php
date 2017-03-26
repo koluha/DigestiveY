@@ -82,7 +82,7 @@
                 foreach ($sp_brand as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_brand'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'brand'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -98,7 +98,7 @@
                 foreach ($sp_country as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_country'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'country'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -113,7 +113,7 @@
                 foreach ($sp_type as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_type'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'type'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -128,7 +128,7 @@
                 foreach ($sp_class as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_class'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'class'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -193,7 +193,7 @@
                 foreach ($sp_region as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_region'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'region'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -211,7 +211,7 @@
                 foreach ($sp_sorty as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_grape_sort'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'grape_sort'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;
@@ -228,7 +228,7 @@
                 foreach ($sp_popular as $sp) {
                     $k++;
                     if ($k < $maxnum) {
-                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'f_brand', 'popular' => '1'));
+                        $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> ' . $sp['title_filter'], array('catalog/', 'url' => $sp['url_category'], 'url_filter' => $sp['url_filter'], 'name_filter' => 'brand', 'popular' => '1'));
                     } else {
                         $text.=CHtml::link('<i class="fa fa-caret-right" aria-hidden="true"></i> Показать все...  ', array('catalog/', 'url' => $item['url']));
                         break;

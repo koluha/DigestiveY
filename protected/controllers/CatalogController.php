@@ -22,11 +22,11 @@ class CatalogController extends Controller {
 
         try {
             //Если нету фильтра 
-            if ($this->rq->getQuery('url') && !$this->rq->getQuery('var_filter') && !$this->rq->getQuery('filter_type')) {
+            if ($this->rq->getQuery('url') && !$this->rq->getQuery('url_filter') && !$this->rq->getQuery('name_filter')) {
                 //Получаем url и найдем id_category
                 $catal['url'] = $this->rq->getQuery('url');
                 $catal['id'] = $this->ob_cat->get_id($catal['url']);
-               
+
                 //Сортировка
                 $catal['sort'] = $this->rq->getQuery('order') ? $this->rq->getQuery('order') : '';
                 Yii::app()->session['select_order'] = $catal['sort'];
@@ -52,6 +52,7 @@ class CatalogController extends Controller {
                 
                 //Если есть фильтра 
             } elseif ($this->rq->getQuery('url') && $this->rq->getQuery('url_filter')) {
+
                 //Получаем url 
                 $catal['url'] = $this->rq->getQuery('url');
                 $catal['id'] = $this->ob_cat->get_id($catal['url']);
@@ -61,8 +62,9 @@ class CatalogController extends Controller {
 
                 //Получить родителя категорий
                 $catal['parent_id'] = $this->ob_cat->parent_id($catal['id']);
+                
                 //Значение фильтра
-                $catal['var_filter'] = $this->rq->getQuery('var_filter');
+                $catal['url_filter'] = $this->rq->getQuery('url_filter');
                 //Имя фильтра (массива)
                 $catal['name_filter'] = $this->rq->getQuery('name_filter');
 
@@ -73,10 +75,12 @@ class CatalogController extends Controller {
                 $page = intval($this->rq->getQuery('page'));
 
 
-                $pag = $this->ob_pagination->use_paginationfilter($catal['parent_id'], $catal['url'], $page, $catal['name_filter'], $catal['var_filter'], $catal['popular']);
+                $pag = $this->ob_pagination->use_paginationfilter($catal['parent_id'], $catal['url'], $page, $catal['url_filter'], $catal['name_filter'], $catal['popular']);
 
+                
+                
                 //Передаем данные фильтра
-                $pag['var_filter'] = $catal['var_filter'];
+                $pag['url_filter'] = $catal['url_filter'];
                 $pag['name_filter'] = $catal['name_filter'];
                 //Сортировки
                 $pag['sort'] = $catal['sort'];
@@ -92,8 +96,9 @@ class CatalogController extends Controller {
                 $pag['popular'] = $catal['popular'];
 
                 //Работа хлебных крошек
+                $title_filter=$this->ob_cat->get_title_filter($catal['url_filter'], $catal['name_filter']);
                 $this->ob_bread->ClearBreadSessian;
-                $this->ob_bread->SetBreadSessian('', $catal['var_filter'], $catal['parent_id']);
+                $this->ob_bread->SetBreadSessian('', $title_filter, $catal['parent_id']);
 
                 $this->render('index', array('data' => $data, 'pagin' => $pag));
             }
