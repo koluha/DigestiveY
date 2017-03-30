@@ -1,20 +1,20 @@
 <script>
-    $(document).ready(function () {
-        $('.button_b').click(function () {
+    $(document).ready(function() {
+        $('.button_b').click(function() {
             var id_pr = $(this).attr('data-idproduct');
             // console.log(id_pr);
             $.get("<?php echo Yii::app()->createUrl('basket/addcart') ?>", {product_id: id_pr});
 
             //Чтобы в корзину успел добавить товар
-            setTimeout(function () {
+            setTimeout(function() {
                 document.location.href = '<?php echo Yii::app()->createUrl('basket/showcart') ?>'
             }, 500);
-            
+
         });
 
 
-        window.onload = function () {
-            document.getElementById('button_filter').onclick = function () {
+        window.onload = function() {
+            document.getElementById('button_filter').onclick = function() {
                 openbox('filter_block', this, 'right_block');
                 return false;
             };
@@ -41,7 +41,7 @@
         }
 
         /*работа сортировки, если уже выбрана страница дальше первой то скидываем снова на первую*/
-        $("#select_order").on('change', function () {
+        $("#select_order").on('change', function() {
             var page = jQuery.query.get('page');
             if (page == '') {
                 window.location.search = jQuery.query.set('order', $(this).val());
@@ -106,64 +106,87 @@ if ($data['categories']) {
         </div>
     </div>
 </div>
-
 <div class="prod_items clearfix">
     <div id="filter_block" class="filtr_block">
         <div class="h_filtr">Параметры фильтра</div>
         <ul class="filter_ul">
             <?php
-            //В сессию записать ид категорий
-            //$filters = ModelCatalog::listFilters($data['categories']['parent_id']);
-            //echo '<pre>';
-            //print_r($data);
-            //echo '<pre>';
+            //В сессию записать ид категорий, и получить данные фильтра этой категорий
+            $filters = ModelCatalog::listFilters(Yii::app()->session['filter_side']);
 
+            //Получаем массив всех фильтров
+            $list_filtr = ModelCatalog::list_filter();
+            
+            
+            foreach ($list_filtr as $key=>$value) {
+
+                if (isset($filters[$key])) {
+                    echo '<li>
+                    <button  class="filtr_ul_button">
+                        <span><i class="fa fa-caret-down" aria-hidden="true"></i>&nbsp;&nbsp;' . $value . '</span>
+                    </button>  
+                    <ul class="filter_options">';
+
+                    foreach ($filters[$key] as $filtr) {
+                        echo '<li>
+                            <label>
+                                <input type="checkbox" name="filter_parameters[]" value="' . $filtr['filter_url'] . '">
+                                <span class="name"> <font>'.$filtr['filter_title'].'</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
+                            </label>
+                        </li>';
+                    }
+
+                    echo '</ul></li>';
+                }
+            }
             ?>
-            
-            
-              <ul class="filter_ul">
-                            <li>
-                                <button  class="filtr_ul_button">
-                                    <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Брэнд</span>
-                                </button>
-                                <ul class="filter_options">
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
-                                            <span class="name"><font><font class="">Клод Шателье</font></font></span>
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
-                                            <span class="name"><font><font>Конт Джозеф</font></font></span>
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li>
-                                <button class="filtr_ul_button">
-                                    <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Страна</span>
-                                </button>
-                                <ul class="filter_options">
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
-                                            <span class="name"><font><font class="">Франция</font></font></span>
-                                        </label>
-                                    </li>
-                                    <li>
-                                        <label>
-                                            <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
-                                            <span class="name"><font><font>Россия</font></font></span>
-                                        </label>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-            
-            
-            
+
+
+
+
+            <!-- <ul class="filter_ul">
+                      <li>
+                          <button  class="filtr_ul_button">
+                              <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Брэнд</span>
+                          </button>
+                          <ul class="filter_options">
+                              <li>
+                                  <label>
+                                      <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
+                                      <span class="name"><font><font class="">Клод Шателье</font></font></span>
+                                  </label>
+                              </li>
+                              <li>
+                                  <label>
+                                      <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
+                                      <span class="name"><font><font>Конт Джозеф</font></font></span>
+                                  </label>
+                              </li>
+                          </ul>
+                      </li>
+                      <li>
+                          <button class="filtr_ul_button">
+                              <span><i class="fa fa-plus-square" aria-hidden="true"></i>&nbsp;&nbsp;Страна</span>
+                          </button>
+                          <ul class="filter_options">
+                              <li>
+                                  <label>
+                                      <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Drevený box">
+                                      <span class="name"><font><font class="">Франция</font></font></span>
+                                  </label>
+                              </li>
+                              <li>
+                                  <label>
+                                      <input type="checkbox" name="filter_parameters[]" value="Parametre|7|Plech">
+                                      <span class="name"><font><font>Россия</font></font></span>
+                                  </label>
+                              </li>
+                          </ul>
+                      </li>
+                  </ul>
+            -->
+
+
             <?php
             //Формируем массив для вывода
             //    foreach ($filters as $key => $filtr) {
@@ -234,7 +257,7 @@ if ($data['categories']) {
     </div>
 
     <div id="right_block" class="prod_block">
-<?php $this->renderPartial('_product', array('products' => $data['products'])); ?>
+        <?php $this->renderPartial('_product', array('products' => $data['products'])); ?>
     </div>
 </div>
 

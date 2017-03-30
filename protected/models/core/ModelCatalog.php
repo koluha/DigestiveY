@@ -139,9 +139,9 @@ class ModelCatalog {
         $id = Yii::app()->db->createCommand($sql)->queryScalar();
         return $id;
     }
-    
+
     //Вернуть имя title фильтра
-     public function get_title_filter($url_filter,$name_filter) {
+    public function get_title_filter($url_filter, $name_filter) {
         $sql = "SELECT title  FROM tb_f_$name_filter WHERE url='$url_filter'";
         $title = Yii::app()->db->createCommand($sql)->queryScalar();
         return $title;
@@ -300,7 +300,54 @@ class ModelCatalog {
 //Получить все фильтры имеющие эти категории товаров
     static function listFilters($key_category) {
         //Будет 15 запосов по каждому фильтру
+        //$brand=self::filter_brand($key_category);
+        //$res['f_brand'] = $brand;
+        //$res['f_brand']['count']=  count($brand);
+        $res = self::filter_all($key_category);
+        return $res;
+    }
+
+    //Боковое фильтры получение
+    static function filter_all($key_category) {
+
+        //Получаем список брендов всех
+        $data=self::list_filter();
+
+        $db = Yii::app()->db;
+        $transaction = $db->beginTransaction();
         try {
+            foreach ($data as $tb_filter=>$text) {
+                //Переберем значения фильтров
+                $sql = "SELECT 
+                            filter.title as filter_title,
+                            filter.url as filter_url,
+                            filter.sort as sort
+                        FROM tb_catalog as c
+                            INNER JOIN tb_product as p ON p.key_group_2 = c.id
+                            INNER JOIN tb_f_$tb_filter as filter  ON p.f_id_$tb_filter = filter.id
+                        WHERE c.parent_id=$key_category OR c.id=$key_category  GROUP BY filter.url";
+                $filters = Yii::app()->db->createCommand($sql)->queryAll();
+                
+                //Тут получим для каждого значения фильтра кол-во товаров имеющихся 
+                //Если не найдены товары фильров вывода не будет
+                        foreach ($filters as $value) {
+                            
+                            $sql = "SELECT COUNT(filter.url)
+                                        FROM tb_catalog as c 
+                                            INNER JOIN tb_product as p ON p.key_group_2 = c.id 
+                                             INNER JOIN tb_f_$tb_filter as filter  ON p.f_id_$tb_filter = filter.id
+                                    WHERE (c.parent_id=$key_category OR c.id=$key_category) AND filter.url='{$value['filter_url']}'";
+                            
+                             $count = Yii::app()->db->createCommand($sql)->queryScalar();
+                             
+                            // $res[$tb_filter][$var]=$count;
+                            
+                             $res[$tb_filter][]=array('filter_title'=>$value['filter_title'],
+                                                      'filter_url'=>$value['filter_url'],
+                                                      'count'=>$count);
+                            }
+                        //Переберем кол-во товаров этого фильтра
+               }
             $transaction->commit();
         } catch (Exception $e) {
             if ($transaction->getActive()) {
@@ -308,87 +355,27 @@ class ModelCatalog {
             }
             throw $e;
         }
-
-
-
-        $sql = "SELECT 
-                f_brand,
-                f_s_brand,
-                f_country,
-                f_s_country,
-                f_region,
-                f_s_region,
-                f_alcohol,
-                f_s_alcohol,
-                f_taste,
-                f_s_taste,
-                f_sugar,
-                f_s_sugar,
-                f_grape_sort,
-                f_s_grape_sort,
-                f_vintage_year,
-                f_s_vintage_year,
-                f_color,
-                f_s_color,
-                f_excerpt,
-                f_s_excerpt,
-                f_fortress,
-                f_volume,
-                f_packaging
-                    
-                FROM tb_catalog as c
-                    INNER JOIN tb_product as p ON p.key_group_2 = c.id
-                WHERE c.parent_id=$key_category OR c.id=$key_category GROUP BY f_brand, f_country ;";
-        $res = Yii::app()->db->createCommand($sql)->queryAll();
-
-        foreach ($res as $key => $value) {
-            if ($value['f_brand']) {
-                $data['f_brand'][] = $value['f_brand'];
-            }
-            if ($value['f_country']) {
-                $data['f_country'][] = $value['f_country'];
-            }
-        }
-        return $data;
+       
+        return $res;
     }
-
-    static function GetFilter() {
-        $sql = "SELECT 
-                f_brand,
-                f_s_brand,
-                f_country,
-                f_s_country,
-                f_region,
-                f_s_region,
-                f_type,
-                f_s_type,
-                f_class,
-                f_s_class,
-                f_alcohol,
-                f_s_alcohol,
-                f_taste,
-                f_s_taste,
-                f_sugar,
-                f_s_sugar,
-                f_grape_sort,
-                f_s_grape_sort,
-                f_vintage_year,
-                f_s_vintage_year,
-                f_color,
-                f_s_color,
-                f_excerpt,
-                f_s_excerpt,
-                f_fortress,
-                f_s_fortress,
-                f_volume,
-                f_s_volume,
-                f_packaging,
-                f_s_packaging
-                    
-                FROM tb_catalog as c
-                    INNER JOIN tb_product as p ON p.key_category = c.id
-                WHERE c.parent_id=$key_category OR c.id=$key_category GROUP BY f_brand, f_country ;";
-        $res = Yii::app()->db->createCommand($sql)->queryAll();
+    
+    static function list_filter(){
+        $data=array('brand'=>'Бренд',
+            'country'=>'Страна',
+            'region'=>'Регион',
+            'type'=>'Тип',
+            'class'=>'Класс',
+            'alcohol'=>'Спирт',
+            'taste'=>'Вкус',
+            'sugar'=>'Сахар',
+            'grape_sort'=>'Сорт винограда',
+            'vintage_year'=>'Год урожая',
+            'color'=>'Цвет',
+            'excerpt'=>'Выдержка',
+            'fortress'=>'Крепость %',
+            'volume'=>'Объем',
+            'packaging'=>'Упаковка');
+        return $data;
     }
 
 //Получить все фильтры имеющие эти категории товаров

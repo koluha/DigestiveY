@@ -20,7 +20,7 @@ class CatalogController extends Controller {
     //Управление каталогом
     public function actionIndex() {
 
-        try {
+   //     try {
             //Если нету фильтра 
             if ($this->rq->getQuery('url') && !$this->rq->getQuery('url_filter') && !$this->rq->getQuery('name_filter')) {
                 //Получаем url и найдем id_category
@@ -40,6 +40,9 @@ class CatalogController extends Controller {
                 //Работа хлебных крошек
                 $this->ob_bread->SetBreadSessian('', '', $catal['id']);
                 // $this->breadcrumbs = $data['bread']; //Для шаблона
+                
+                //Запомнить id для фильтра бокового
+                 Yii::app()->session['filter_side'] = $catal['id'];
                 
                 //Пагинация 
                 $page = intval($this->rq->getQuery('page'));
@@ -99,12 +102,15 @@ class CatalogController extends Controller {
                 $title_filter=$this->ob_cat->get_title_filter($catal['url_filter'], $catal['name_filter']);
                 $this->ob_bread->ClearBreadSessian;
                 $this->ob_bread->SetBreadSessian('', $title_filter, $catal['parent_id']);
+                
+                 //Запомнить id для фильтра бокового
+                 Yii::app()->session['filter_side'] = $catal['id'];
 
                 $this->render('index', array('data' => $data, 'pagin' => $pag));
             }
-        } catch (Exception $ex) {
-            $ex->getMessage('Ошибка получения данных продуктов');
-        }
+      //  } catch (Exception $ex) {
+           // $ex->getMessage('Ошибка получения данных продуктов');
+      //  }
     }
 
     //Вернет случайную запись выбраннной категорий
