@@ -40,6 +40,33 @@
             }
         }
 
+
+        /*чек боксы*/
+
+        /*Отловим событие изменения чек бокса*/
+        $("input[name='param_filter[]']").change(function() {
+            Checkes = $("input[name='param_filter[]']");
+
+            Checkes.each(function() {  //найти все нажатые checked
+                if ($(this).is(':checked')) {
+                    var value = $(this).val();
+                    var n_filter = $(this).attr('data-name-filter');
+
+                    console.log(n_filter);  //Название фильра
+                    console.log(value);     //Значение фильтра
+
+
+                }
+
+            });
+            console.log('==');
+        });
+
+        /*$("input[@name='param_filter[]']:checked" ).each(function( index ) {
+         console.log( index + ": " + $( this ).text() );
+         });
+         */
+
         /*работа сортировки, если уже выбрана страница дальше первой то скидываем снова на первую*/
         $("#select_order").on('change', function() {
             var page = jQuery.query.get('page');
@@ -116,9 +143,9 @@ if ($data['categories']) {
 
             //Получаем массив всех фильтров
             $list_filtr = ModelCatalog::list_filter();
-            
-            
-            foreach ($list_filtr as $key=>$value) {
+
+
+            foreach ($list_filtr as $key => $value) {
 
                 if (isset($filters[$key])) {
                     echo '<li>
@@ -130,8 +157,8 @@ if ($data['categories']) {
                     foreach ($filters[$key] as $filtr) {
                         echo '<li>
                             <label>
-                                <input type="checkbox" name="filter_parameters[]" value="' . $filtr['filter_url'] . '">
-                                <span class="name"> <font>'.$filtr['filter_title'].'</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
+                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '">
+                                <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
                             </label>
                         </li>';
                     }
