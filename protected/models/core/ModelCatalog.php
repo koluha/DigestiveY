@@ -247,6 +247,67 @@ class ModelCatalog {
         return $res;
     }
 
+    //Получить Продукты для Фильтра 
+    //catal - id категорий
+    //data_filter - массив('имя фильтра'=>'значение')
+    public function AjaxListProduct($catal, $test_where_filter) {
+        
+        $sql = "SELECT  
+                    c.id as c_id,
+                    c.parent_id,
+                    p.id,
+                    p.article,
+                    p.key_group_1,
+                    p.key_group_2,
+                    p.key_group_3,
+                    p.i_popular,
+                    p.i_limitedly,
+                    p.i_name_sku,
+                    p.i_availability,
+                    p.i_popular,
+                    p.i_old_price,
+                    p.i_price,
+                    p.d_photo_small,
+                    p.d_photo_middle,
+                    p.t_url,
+                    volume.url as  f_brand_url,
+                    country.url as  f_country_url,
+                    region.url as  f_region_url,
+                    type.url as  f_type_url,
+                    class.url as  f_class_url,
+                    alcohol.url as  f_alcohol_url,
+                    taste.url as  f_taste_url,
+                    sugar.url as  f_sugar_url,
+                    grape_sort.url as  f_grape_sort_url,
+                    vintage_year.url as  f_vintage_year_url,
+                    color.url as  f_color_url,
+                    excerpt.url as  f_excerpt_url,
+                    fortress.url as f_fortress,
+                    volume.url as f_volume,
+                    packaging.url as f_packaging
+                        FROM  tb_catalog as c
+                            INNER JOIN tb_product as p ON p.key_group_2 = c.id
+                            LEFT JOIN tb_f_brand AS brand ON brand.id=p.f_id_brand 
+                            LEFT JOIN tb_f_country AS country ON country.id=p.f_id_country 
+                            LEFT JOIN tb_f_region AS region ON region.id=p.f_id_region 
+                            LEFT JOIN tb_f_type AS type ON type.id=p.f_id_type 
+                            LEFT JOIN tb_f_class AS class ON class.id=p.f_id_class 
+                            LEFT JOIN tb_f_alcohol AS alcohol ON alcohol.id=p.f_id_alcohol 
+                            LEFT JOIN tb_f_taste AS taste ON taste.id=p.f_id_taste 
+                            LEFT JOIN tb_f_sugar AS sugar ON sugar.id=p.f_id_sugar 
+                            LEFT JOIN tb_f_grape_sort AS grape_sort ON grape_sort.id=p.f_id_grape_sort 
+                            LEFT JOIN tb_f_vintage_year AS vintage_year ON vintage_year.id=p.f_id_vintage_year 
+                            LEFT JOIN tb_f_color AS color ON color.id=p.f_id_color 
+                            LEFT JOIN tb_f_excerpt AS excerpt ON excerpt.id=p.f_id_excerpt 
+                            LEFT JOIN tb_f_fortress AS fortress ON fortress.id=p.f_id_fortress
+                            LEFT JOIN tb_f_volume AS volume ON volume.id=p.f_id_volume
+                            LEFT JOIN tb_f_packaging AS packaging ON packaging.id=p.f_id_packaging 
+                       WHERE (c.parent_id=$catal OR c.id=$catal  OR key_group_3=$catal)  $test_where_filter";
+
+        $res = Yii::app()->db->createCommand($sql)->queryAll();
+        return $res;
+    }
+
     public function levelpopular() {
         $sql = "SELECT p.key_group_2, c.url AS url_category,  c.parent_id,    fl.url AS url_filter, fl.title AS title_filter, fl.sort AS sort_filter      
                         FROM tb_product as p
@@ -311,12 +372,12 @@ class ModelCatalog {
     static function filter_all($key_category) {
 
         //Получаем список брендов всех
-        $data=self::list_filter();
+        $data = self::list_filter();
 
         $db = Yii::app()->db;
         $transaction = $db->beginTransaction();
         try {
-            foreach ($data as $tb_filter=>$text) {
+            foreach ($data as $tb_filter => $text) {
                 //Переберем значения фильтров
                 $sql = "SELECT 
                             filter.title as filter_title,
@@ -327,27 +388,27 @@ class ModelCatalog {
                             INNER JOIN tb_f_$tb_filter as filter  ON p.f_id_$tb_filter = filter.id
                         WHERE c.parent_id=$key_category OR c.id=$key_category  GROUP BY filter.url";
                 $filters = Yii::app()->db->createCommand($sql)->queryAll();
-                
+
                 //Тут получим для каждого значения фильтра кол-во товаров имеющихся 
                 //Если не найдены товары фильров вывода не будет
-                        foreach ($filters as $value) {
-                            
-                            $sql = "SELECT COUNT(filter.url)
+                foreach ($filters as $value) {
+
+                    $sql = "SELECT COUNT(filter.url)
                                         FROM tb_catalog as c 
                                             INNER JOIN tb_product as p ON p.key_group_2 = c.id 
                                              INNER JOIN tb_f_$tb_filter as filter  ON p.f_id_$tb_filter = filter.id
                                     WHERE (c.parent_id=$key_category OR c.id=$key_category) AND filter.url='{$value['filter_url']}'";
-                            
-                             $count = Yii::app()->db->createCommand($sql)->queryScalar();
-                             
-                            // $res[$tb_filter][$var]=$count;
-                            
-                             $res[$tb_filter][]=array('filter_title'=>$value['filter_title'],
-                                                      'filter_url'=>$value['filter_url'],
-                                                      'count'=>$count);
-                            }
-                        //Переберем кол-во товаров этого фильтра
-               }
+
+                    $count = Yii::app()->db->createCommand($sql)->queryScalar();
+
+                    // $res[$tb_filter][$var]=$count;
+
+                    $res[$tb_filter][] = array('filter_title' => $value['filter_title'],
+                        'filter_url' => $value['filter_url'],
+                        'count' => $count);
+                }
+                //Переберем кол-во товаров этого фильтра
+            }
             $transaction->commit();
         } catch (Exception $e) {
             if ($transaction->getActive()) {
@@ -355,26 +416,26 @@ class ModelCatalog {
             }
             throw $e;
         }
-       
+
         return $res;
     }
-    
-    static function list_filter(){
-        $data=array('brand'=>'Бренд',
-            'country'=>'Страна',
-            'region'=>'Регион',
-            'type'=>'Тип',
-            'class'=>'Класс',
-            'alcohol'=>'Спирт',
-            'taste'=>'Вкус',
-            'sugar'=>'Сахар',
-            'grape_sort'=>'Сорт винограда',
-            'vintage_year'=>'Год урожая',
-            'color'=>'Цвет',
-            'excerpt'=>'Выдержка',
-            'fortress'=>'Крепость %',
-            'volume'=>'Объем',
-            'packaging'=>'Упаковка');
+
+    static function list_filter() {
+        $data = array('brand' => 'Бренд',
+            'country' => 'Страна',
+            'region' => 'Регион',
+            'type' => 'Тип',
+            'class' => 'Класс',
+            'alcohol' => 'Спирт',
+            'taste' => 'Вкус',
+            'sugar' => 'Сахар',
+            'grape_sort' => 'Сорт винограда',
+            'vintage_year' => 'Год урожая',
+            'color' => 'Цвет',
+            'excerpt' => 'Выдержка',
+            'fortress' => 'Крепость %',
+            'volume' => 'Объем',
+            'packaging' => 'Упаковка');
         return $data;
     }
 

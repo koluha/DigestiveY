@@ -20,7 +20,7 @@ class CatalogController extends Controller {
     //Управление каталогом
     public function actionIndex() {
 
-   //     try {
+        try {
             //Если нету фильтра 
             if ($this->rq->getQuery('url') && !$this->rq->getQuery('url_filter') && !$this->rq->getQuery('name_filter')) {
                 //Получаем url и найдем id_category
@@ -40,19 +40,18 @@ class CatalogController extends Controller {
                 //Работа хлебных крошек
                 $this->ob_bread->SetBreadSessian('', '', $catal['id']);
                 // $this->breadcrumbs = $data['bread']; //Для шаблона
-                
                 //Запомнить id для фильтра бокового
-                 Yii::app()->session['filter_side'] = $catal['id'];
-                
+                Yii::app()->session['filter_side'] = $catal['id'];
+
                 //Пагинация 
                 $page = intval($this->rq->getQuery('page'));
                 $pag = $this->ob_pagination->use_pagination($catal['id'], $catal['url'], $page);
                 $pag['sort'] = $catal['sort'];
                 //Продукты без фильтра
                 $data['products'] = $this->ob_cat->ListProduct($catal, $pag);
-                
+
                 $this->render('index', array('data' => $data, 'pagin' => $pag));
-                
+
                 //Если есть фильтра 
             } elseif ($this->rq->getQuery('url') && $this->rq->getQuery('url_filter')) {
 
@@ -65,7 +64,7 @@ class CatalogController extends Controller {
 
                 //Получить родителя категорий
                 $catal['parent_id'] = $this->ob_cat->parent_id($catal['id']);
-                
+
                 //Значение фильтра
                 $catal['url_filter'] = $this->rq->getQuery('url_filter');
                 //Имя фильтра (массива)
@@ -80,8 +79,8 @@ class CatalogController extends Controller {
 
                 $pag = $this->ob_pagination->use_paginationfilter($catal['parent_id'], $catal['url'], $page, $catal['url_filter'], $catal['name_filter'], $catal['popular']);
 
-                
-                
+
+
                 //Передаем данные фильтра
                 $pag['url_filter'] = $catal['url_filter'];
                 $pag['name_filter'] = $catal['name_filter'];
@@ -99,18 +98,18 @@ class CatalogController extends Controller {
                 $pag['popular'] = $catal['popular'];
 
                 //Работа хлебных крошек
-                $title_filter=$this->ob_cat->get_title_filter($catal['url_filter'], $catal['name_filter']);
+                $title_filter = $this->ob_cat->get_title_filter($catal['url_filter'], $catal['name_filter']);
                 $this->ob_bread->ClearBreadSessian;
                 $this->ob_bread->SetBreadSessian('', $title_filter, $catal['parent_id']);
-                
-                 //Запомнить id для фильтра бокового
-                 Yii::app()->session['filter_side'] = $catal['id'];
+
+                //Запомнить id для фильтра бокового
+                Yii::app()->session['filter_side'] = $catal['id'];
 
                 $this->render('index', array('data' => $data, 'pagin' => $pag));
             }
-      //  } catch (Exception $ex) {
-           // $ex->getMessage('Ошибка получения данных продуктов');
-      //  }
+        } catch (Exception $ex) {
+            $ex->getMessage('Ошибка получения данных продуктов');
+        }
     }
 
     //Вернет случайную запись выбраннной категорий
@@ -124,6 +123,93 @@ class CatalogController extends Controller {
 
             $data = $this->ob_cat->get_all($res[$number]);
             return ($data) ? $data : '';
+        }
+    }
+
+    public function actionFilterAjax() {
+        if (Yii::app()->request->isAjaxRequest) {
+            $data_filrets = $_POST['data_filrets'];
+            $url_category = $_POST['url_category'];
+
+            if ($data_filrets) {
+                /* Входные данные  * Array([0] => brand&Bruichladdich [1] => country&Scotland) */
+                $obj_catalog = new ModelCatalog;
+                $id_catagory = $obj_catalog->get_id($url_category); //id категорий
+
+                foreach ($data_filrets as $name => $var) {
+                    //Извлеч из строки строки массива - название фильтра и его значение в переменные 
+                    $name_f = self::string_filter($var, '&', 'before');
+                    $value_f = self::string_filter($var, '&', 'after');
+
+                    //Это сделано для удобного сравнения одинаковых имен фильтра
+                    $arr[] = array('name' => $name_f,
+                        'value' => $value_f);
+                }
+
+                //$field='ff';
+                //${'default_'.$field}=15444;
+                // ПОлучить часть текста sql
+                $list_filter = $obj_catalog->list_filter();
+                $count = 0;
+                foreach ($list_filter as $name_filter => $value_filter) {
+                    ${'count_' . $name_filter} = 0;
+                    foreach ($arr as $key => $val) {
+                        if ($val['name'] == $name_filter) {
+                            ${'count_' . $name_filter} ++;
+                            if (${'count_' . $name_filter} == 1) {
+                                ${'sql_' . $name_filter}.="{$val['name']}.url={$val['value']}";
+                            } elseif (${'count_' . $name_filter} > 1) {
+                                ${'sql_' . $name_filter}.=($key >= 1 ? ' OR ' : '');
+                                ${'sql_' . $name_filter}.="{$val['name']}.url={$val['value']}";
+                            }
+                        }
+                    }
+                    //Если есть данные фильтра по имени отдельно записать в массив
+                    if (${'sql_' . $name_filter}) {
+                        $text[] = ${'sql_' . $name_filter} ? '(' . ${'sql_' . $name_filter} . ')' : ' ';
+                    }
+                    /* Результат на выходе
+                     * Array
+                      (
+                      [0] => (brand.url=Metaxa OR brand.url=Remy_Martin)
+                      [1] => (class.url=5_Stars)
+                      [2] => (volume.url=0_05 OR volume.url=0_2)
+                      [3] => (packaging.url=Gift_box_with_2_glass OR packaging.url=Gift_box_with_glass)
+                      )
+                     */
+                }
+
+
+
+
+                echo '<pre>';
+
+                print_r($arr);
+                print_r($sql_brand_where);
+                print_r($sql_country_where);
+                print_r($text);
+
+
+                //  print_r($data);
+                //  echo $test_where_filter;
+                // Завершаем приложение
+                Yii::app()->end();
+            }
+        }
+    }
+
+    //Возвращает разобранную строку
+    static function string_filter($string, $flag, $position) {
+        if ($string) {
+            if ($position == 'before') {
+                $pos = strpos($string, $flag); //Найти позицию flag
+                $res = substr($string, 0, $pos); //Вырезать строку от начала до указанной позиции 
+            } elseif ($position == 'after') {
+                $pos = strpos($string, $flag);
+                $len = strlen($string);
+                $res = substr($string, $pos + 1, $len); //взять все строки после flag
+            }
+            return $res;
         }
     }
 
