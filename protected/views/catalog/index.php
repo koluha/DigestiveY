@@ -1,20 +1,20 @@
 <script>
-    $(document).ready(function () {
-        $('.button_b').click(function () {
+    $(document).ready(function() {
+        $('.button_b').click(function() {
             var id_pr = $(this).attr('data-idproduct');
             // console.log(id_pr);
             $.get("<?php echo Yii::app()->createUrl('basket/addcart') ?>", {product_id: id_pr});
 
             //Чтобы в корзину успел добавить товар
-            setTimeout(function () {
+            setTimeout(function() {
                 document.location.href = '<?php echo Yii::app()->createUrl('basket/showcart') ?>'
             }, 500);
 
         });
 
 
-        window.onload = function () {
-            document.getElementById('button_filter').onclick = function () {
+        window.onload = function() {
+            document.getElementById('button_filter').onclick = function() {
                 openbox('filter_block', this, 'right_block');
                 return false;
             };
@@ -43,37 +43,38 @@
 
         /*чек боксы*/
         /*Отловим событие изменения чек бокса */
-        $("input[name='param_filter[]']").change(function () {
-           Checkes = $("input[name='param_filter[]']");
+        $("input[name='param_filter[]']").change(function() {
+            Checkes = $("input[name='param_filter[]']");
             //Получить выбранную категорию из url
-                var url_category = '<?php echo Yii::app()->getRequest()->getPathInfo() ?>'
+            var url_category = '<?php echo Yii::app()->getRequest()->getPathInfo() ?>'
             var data = new Array();  //Массив data
-            i=0;
-            Checkes.each(function () {  //найти все checked
+            i = 0;
+            Checkes.each(function() {  //найти все checked
                 if ($(this).is(':checked')) {
                     var attr_value = $(this).val();
                     var attr_name_filter = $(this).attr('data-name-filter');
-                         data[i] = attr_name_filter + '&' + attr_value; //запись в массив (имя фильтра - значение)
-                         i++;
-    
+                    data[i] = attr_name_filter + '&' + attr_value; //запись в массив (имя фильтра - значение)
+                    i++;
+
                 }
             });
-            console.log(JSON.stringify(data));
+            //console.log(JSON.stringify(data));
             //!!Нужно знать id категорию 
             $.ajax({
-                type: "POST",
-                dataType: 'json',
+                type: 'POST',
                 url: "<?php echo Yii::app()->createUrl('Catalog/FilterAjax') ?>",
-                data: {'data_filrets':data,'url_category':url_category}, 
-                success: function (res) {
-                    alert(res);
+                data: {data_filrets: data, url_category: url_category},
+                success: function(d) {
+                    $('.prod_block_filtr').empty().append(d);
+                    $('.page-numbers').empty();
+        //console.log(d);
                 }
             });
         });
 
 
         /*работа сортировки, если уже выбрана страница дальше первой то скидываем снова на первую*/
-        $("#select_order").on('change', function () {
+        $("#select_order").on('change', function() {
             var page = jQuery.query.get('page');
             if (page == '') {
                 window.location.search = jQuery.query.set('order', $(this).val());
@@ -89,8 +90,6 @@
 
 
 </script>
-
-
 <?php
 if ($data['categories']) {
     $this->renderPartial('_categories', array('data' => $data));
@@ -289,7 +288,10 @@ if ($data['categories']) {
     </div>
 
     <div id="right_block" class="prod_block">
-        <?php $this->renderPartial('_product', array('products' => $data['products'])); ?>
+        <?php 
+        $this->renderPartial('_product', array('products' => $data['products'])); 
+                
+        ?>
     </div>
 </div>
 

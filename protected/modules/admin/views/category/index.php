@@ -130,7 +130,7 @@
     });
             //Клик по форме кнопка  категории
             $('#form_cat form').ajaxForm({
-    dataType: 'json',
+            dataType: 'json',
             type: 'POST',
             url: '<? echo Yii::app()->createUrl('admin/ajax/ajaxdocat') ?>',
             beforeSubmit: function(d, f) {

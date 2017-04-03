@@ -130,11 +130,14 @@ class CatalogController extends Controller {
         if (Yii::app()->request->isAjaxRequest) {
             $data_filrets = $_POST['data_filrets'];
             $url_category = $_POST['url_category'];
+            $obj_catalog = new ModelCatalog;
+            $id_catagory = $obj_catalog->get_id($url_category); //id категорий
 
-            if ($data_filrets) {
+            if ($data_filrets) { //Если пришли данные фильтра
                 /* Входные данные  * Array([0] => brand&Bruichladdich [1] => country&Scotland) */
-                $obj_catalog = new ModelCatalog;
-                $id_catagory = $obj_catalog->get_id($url_category); //id категорий
+
+
+
 
                 foreach ($data_filrets as $name => $var) {
                     //Извлеч из строки строки массива - название фильтра и его значение в переменные 
@@ -146,53 +149,47 @@ class CatalogController extends Controller {
                         'value' => $value_f);
                 }
 
-                //$field='ff';
-                //${'default_'.$field}=15444;
-                // ПОлучить часть текста sql
+                // Получить часть текста sql
                 $list_filter = $obj_catalog->list_filter();
                 $count = 0;
+                $count_sql = 0;
                 foreach ($list_filter as $name_filter => $value_filter) {
                     ${'count_' . $name_filter} = 0;
                     foreach ($arr as $key => $val) {
                         if ($val['name'] == $name_filter) {
                             ${'count_' . $name_filter} ++;
                             if (${'count_' . $name_filter} == 1) {
-                                ${'sql_' . $name_filter}.="{$val['name']}.url={$val['value']}";
+                                ${'sql_' . $name_filter}.="{$val['name']}.url='{$val['value']}'";
                             } elseif (${'count_' . $name_filter} > 1) {
                                 ${'sql_' . $name_filter}.=($key >= 1 ? ' OR ' : '');
-                                ${'sql_' . $name_filter}.="{$val['name']}.url={$val['value']}";
+                                ${'sql_' . $name_filter}.="{$val['name']}.url='{$val['value']}'";
                             }
                         }
                     }
-                    //Если есть данные фильтра по имени отдельно записать в массив
                     if (${'sql_' . $name_filter}) {
-                        $text[] = ${'sql_' . $name_filter} ? '(' . ${'sql_' . $name_filter} . ')' : ' ';
+
+                        $sql_where.=' AND ';
+                        $sql_where.= ${'sql_' . $name_filter} ? '(' . ${'sql_' . $name_filter} . ')' : ' ';
                     }
-                    /* Результат на выходе
-                     * Array
-                      (
-                      [0] => (brand.url=Metaxa OR brand.url=Remy_Martin)
-                      [1] => (class.url=5_Stars)
-                      [2] => (volume.url=0_05 OR volume.url=0_2)
-                      [3] => (packaging.url=Gift_box_with_2_glass OR packaging.url=Gift_box_with_glass)
-                      )
-                     */
+                    // выходе часть строки sql после where 
+                }
+                if (!empty($sql_where)) {
+                    $list = $obj_catalog->AjaxListProduct($id_catagory, $sql_where);
                 }
 
+                //echo '<pre>';
+               // print_r($list);
+                $view = $obj_catalog->ViewProduct($list);
+                echo $view;
 
-
-
-                echo '<pre>';
-
-                print_r($arr);
-                print_r($sql_brand_where);
-                print_r($sql_country_where);
-                print_r($text);
-
-
-                //  print_r($data);
-                //  echo $test_where_filter;
                 // Завершаем приложение
+                Yii::app()->end();
+            } else {
+                $list = $obj_catalog->AjaxAllListProduct($id_catagory);
+               // echo '<pre>';
+               // print_r($list);
+                $view = $obj_catalog->ViewProduct($list);
+                echo $view;
                 Yii::app()->end();
             }
         }

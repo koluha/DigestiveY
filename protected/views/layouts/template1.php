@@ -28,11 +28,11 @@
     </head>
     <body>
         <!-- Это первая страница -->
-        <!--  <div id="block_confirmation">
+       <div id="block_confirmation">
             <span>18+</span>
             <p>Добро пожаловать на сайт сети винных магазинов Thedigestive. Для доступа необходимо подтвердить совершеннолетний возраст.</p>
             <button class="bt_18">Мне исполнилось 18 лет</button>
-        </div>-->
+        </div>
         
         <div class="wrapper">
 

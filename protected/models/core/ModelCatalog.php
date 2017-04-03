@@ -200,10 +200,12 @@ class ModelCatalog {
                             p.d_photo_small,
                             p.d_photo_middle,
                             p.t_url,
-                            p.f_fortress,
-                            p.f_volume
+                            f_f.title as f_fortress,
+                            f_v.title as f_volume
                         FROM  tb_catalog as c
                         INNER JOIN tb_product as p ON p.key_group_2 = c.id
+                            LEFT JOIN tb_f_fortress AS f_f ON f_f.id=p.f_id_fortress
+                            LEFT JOIN tb_f_volume AS f_v ON f_v.id=p.f_id_volume
                         WHERE c.parent_id=" . $catal['id'] . " OR c.id=" . $catal['id'] . "  OR key_group_3=" . $catal['id'] . " " . $order . " LIMIT " . $pag['start'] . "," . $pag['num'] . "";
             //С фильтром
         } elseif ($catal['parent_id'] && $catal['url_filter'] && $catal['name_filter']) {
@@ -234,7 +236,7 @@ class ModelCatalog {
                         p.t_url,
                         f.url,
                         f_f.title as f_fortress,
-                        f_f.title as f_volume
+                        f_v.title as f_volume
                 FROM tb_catalog as c
                     INNER JOIN tb_product as p ON p.key_group_2 = c.id
                         INNER JOIN tb_f_$name_filter as f  ON p.f_id_$name_filter = f.id
@@ -244,6 +246,33 @@ class ModelCatalog {
                             $popular AND f.url='$url_filter' " . $order . "  LIMIT " . $pag['start'] . "," . $pag['num'] . " ";
         }
         $res = Yii::app()->db->createCommand($sql)->queryAll();
+        return $res;
+    }
+
+    public function AjaxAllListProduct($id_catalog){
+           $sql = "SELECT  
+                            p.id,
+                            p.article,
+                            p.key_group_1,
+                            p.key_group_2,
+                            p.key_group_3,
+                            p.i_popular,
+                            p.i_limitedly,
+                            p.i_name_sku,
+                            p.i_availability,
+                            p.i_old_price,
+                            p.i_price,
+                            p.d_photo_small,
+                            p.d_photo_middle,
+                            p.t_url,
+                            f_f.title as f_fortress,
+                            f_v.title as f_volume
+                        FROM  tb_catalog as c
+                        INNER JOIN tb_product as p ON p.key_group_2 = c.id
+                         LEFT JOIN tb_f_fortress AS f_f ON f_f.id=p.f_id_fortress
+                         LEFT JOIN tb_f_volume AS f_v ON f_v.id=p.f_id_volume
+                        WHERE c.parent_id=" . $id_catalog . " OR c.id=" . $id_catalog . "  OR key_group_3=" . $id_catalog . " ORDER BY i_old_price desc";
+           $res = Yii::app()->db->createCommand($sql)->queryAll();
         return $res;
     }
 
@@ -270,21 +299,21 @@ class ModelCatalog {
                     p.d_photo_small,
                     p.d_photo_middle,
                     p.t_url,
-                    volume.url as  f_brand_url,
-                    country.url as  f_country_url,
-                    region.url as  f_region_url,
-                    type.url as  f_type_url,
-                    class.url as  f_class_url,
-                    alcohol.url as  f_alcohol_url,
-                    taste.url as  f_taste_url,
-                    sugar.url as  f_sugar_url,
-                    grape_sort.url as  f_grape_sort_url,
-                    vintage_year.url as  f_vintage_year_url,
-                    color.url as  f_color_url,
-                    excerpt.url as  f_excerpt_url,
-                    fortress.url as f_fortress,
-                    volume.url as f_volume,
-                    packaging.url as f_packaging
+                    brand.title as  f_brand_url,
+                    country.title as  f_country_url,
+                    region.title as  f_region_url,
+                    type.title as  f_type_url,
+                    class.title as  f_class_url,
+                    alcohol.title as  f_alcohol_url,
+                    taste.title as  f_taste_url,
+                    sugar.title as  f_sugar_url,
+                    grape_sort.title as  f_grape_sort_url,
+                    vintage_year.title as  f_vintage_year_url,
+                    color.title as  f_color_url,
+                    excerpt.title as  f_excerpt_url,
+                    fortress.title as f_fortress,
+                    volume.title as f_volume,
+                    packaging.title as f_packaging
                         FROM  tb_catalog as c
                             INNER JOIN tb_product as p ON p.key_group_2 = c.id
                             LEFT JOIN tb_f_brand AS brand ON brand.id=p.f_id_brand 
@@ -578,6 +607,94 @@ class ModelCatalog {
             return TRUE; //запись есть
         } else {
             return FALSE;
+        }
+    }
+    
+    static function ViewProduct($array){
+          if (!empty($array)) {
+            
+            //echo '<pre>';
+            //print_r($data);
+            foreach ($array as $product) {
+                               
+                $url = Yii::app()->createUrl('product', array('url' => $product['t_url']));
+
+                $text = '<div class="cont_pr">';
+                $text.= '<a class="item_link" href=' . $url . '>';
+                $text.=($product['d_photo_small']) ? '<img src="/uploads/' . $product['d_photo_small'] . '" alt="" />' : '<img src="/img/noimg.jpg" alt="" />';
+
+                //$static = ModelCatalog::statdata($product['id']);
+                $f = ($product['f_volume'] != 0) ? $product['f_volume'] . ' L  • ' : '';
+                $v = (!empty($product['f_fortress'])) ? $product['f_fortress'] . ' % ' : '';
+                $text.='<div class="volume">' . $f . $v . '</div>';
+
+                //Вырезаем строку до символа /
+                $pos = strpos($product['i_name_sku'], '/');
+                $title = substr($product['i_name_sku'], 0, $pos);
+                $text.='<div class="name_pr">' . $title . '</div>';
+
+
+
+
+                $aval = ($product['i_availability'] == 0) ? 'На складе' : '';
+                switch ($product['i_availability']) {
+                    case 0:
+                        $aval = '<div class="availability_not">Нет в наличии</div>';
+                        break;
+                    case 1:
+                        $aval = '<div class="availability">В наличии</div>';
+                        break;
+                    case 2:
+                        $aval = '<div class="availability">Количество ограничено</div>';
+                        break;
+                    case 3:
+                        $aval = '<div class="availability_pop">Популярное</div>';
+                        break;
+                    case 4:
+                        $aval = '<div class="availability_ak">Акция</div>';
+                        break;
+                }
+
+                $text.=$aval;
+
+                $old_pr = ($product['i_old_price'] != 0) ? $product['i_old_price'] . ' руб.' : '';
+                $text.='<div class="price_old">' . $old_pr . ' </div>';
+
+                $text.='<div class="price">' . $product['i_price'] . ' руб</div>';
+                $text.='<div class="flash">';
+                
+                
+                if ($product['i_old_price'] != 0) {
+                    $text.='<div class="label label_red">';
+                    $pr = intval($product['i_price'] * 100 / $product['i_old_price']);
+                    $rpr = 100 - $pr;
+                    $text.='<div class="discount__top">' . $rpr . '%</div>';
+                    $text.='<div class="discount__bottom">Скидка</div>';
+                    $text.='</div>';
+                }
+                 if ($product['i_popular'] != 0) {
+                     $text.='<div class="label label_green">';
+                     $text.='<div class="l_popular">Популярное</div>';
+                     $text.='</div>';
+                 }
+                
+                 if ($product['i_limitedly'] != 0) {
+                     $text.='<div class="label label_yelow">';
+                     $text.='<div class="l_limit">Ограниченное</div>';
+                     $text.=' <div class="l2_limit">количество</div>';
+                     $text.='</div>';
+                 }
+                
+               
+                
+                $text.='</div>';
+                $text.='</a>';
+                $text.='<button class="button_b"  data-idproduct="' . $product['id'] . '" ><i class="fa fa-shopping-cart fa-lg"></i>&nbsp;&nbsp;&nbsp;&nbsp; В корзину</button>';
+                $text.='</div>';
+                echo $text;
+            }
+        } else {
+            echo '<br><br><br><h2>Товара еще нет в данной категории!!!</h2><br><br><br>';
         }
     }
 
