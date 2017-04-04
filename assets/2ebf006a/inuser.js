@@ -1,4 +1,4 @@
-$(function () {
+$(window).load(function() {
     //Проверить есть ли значение в куках
     user_in = $.cookie('confir');
     if (user_in !== 'true') {
@@ -16,6 +16,8 @@ $(function () {
             event.preventDefault();
         });
     }
+
+
 
     //Клик по кнопке принять
     $('.bt_18').click(function () {

@@ -467,7 +467,7 @@ h1{
 #select_form{
     display: inline;
 }
- .show_view span{
+.show_view span{
     padding-right: 5px;
 }
 .show_view a{
@@ -540,6 +540,15 @@ h1{
 
 .prod_block_filtr{
     padding-left: 285px;
+}
+#cat_loader{
+    background: url(/img/loader.gif) no-repeat no-repeat;
+    display: none;
+    width: 100px;
+    height: 100px;
+    left: 50%;
+    position: absolute;
+    z-index: 500;
 }
 .h_filtr{
     font-size: 14px;

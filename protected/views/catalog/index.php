@@ -25,8 +25,11 @@
         /* Функция открывает блок фильтра и меняет класс у блока товара*/
 
         function openbox(id, toggler, right_block) {
-            var div = document.getElementById(id);
+            
+        
+        var div = document.getElementById(id);
             var div_right = document.getElementById(right_block);
+            
             if (div.style.display == 'block') {
                 div.style.display = 'none';
                 toggler.innerHTML = '<i class="fa fa-tasks fa-lg" aria-hidden="true"></i>&nbsp; показать фильтр';
@@ -44,6 +47,11 @@
         /*чек боксы*/
         /*Отловим событие изменения чек бокса */
         $("input[name='param_filter[]']").change(function() {
+            submitFilter();
+        });
+
+        var timeout;
+        function submitFilter() {
             Checkes = $("input[name='param_filter[]']");
             //Получить выбранную категорию из url
             var url_category = '<?php echo Yii::app()->getRequest()->getPathInfo() ?>'
@@ -60,17 +68,33 @@
             });
             //console.log(JSON.stringify(data));
             //!!Нужно знать id категорию 
+            //Имитация загрузки css 
+            $("#cat_loader").css({display: "block"});
+            var startTime = new Date().getTime(); // засекаем время начала запроса
             $.ajax({
                 type: 'POST',
                 url: "<?php echo Yii::app()->createUrl('Catalog/FilterAjax') ?>",
                 data: {data_filrets: data, url_category: url_category},
                 success: function(d) {
-                    $('.prod_block_filtr').empty().append(d);
-                    $('.page-numbers').empty();
-        //console.log(d);
+                    var requestDuration = new Date().getTime() - startTime; // вычисляем продолжительность запроса
+                    if (requestDuration < 500) { // если выполнился меньше чем за секунду
+                        clearTimeout(timeout);
+                        timeout = setTimeout(function() { // устанавливаем таймер
+                            $("#cat_loader").css({display: "none"});
+                            $('.prod_block_filtr').empty().append(d);
+                            $('.page-numbers').empty();
+
+
+                        }, 500 - requestDuration); // на время оставшиеся до секунды
+                    } else {
+                        $("#cat_loader").css({display: "none"}); // иначе сразу скрываем лоадер
+                        $('.prod_block_filtr').empty().append(d);
+                        $('.page-numbers').empty();
+                    }
                 }
             });
-        });
+        }
+        ;
 
 
         /*работа сортировки, если уже выбрана страница дальше первой то скидываем снова на первую*/
@@ -286,12 +310,14 @@ if ($data['categories']) {
         </ul>
             -->
     </div>
-
+<div id="cat_loader"></div>
     <div id="right_block" class="prod_block">
-        <?php 
-        $this->renderPartial('_product', array('products' => $data['products'])); 
-                
+        
+
+        <?php
+        $this->renderPartial('_product', array('products' => $data['products']));
         ?>
+
     </div>
 </div>
 

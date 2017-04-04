@@ -17,6 +17,8 @@ $(window).load(function() {
         });
     }
 
+
+
     //Клик по кнопке принять
     $('.bt_18').click(function () {
         //Запись кука
