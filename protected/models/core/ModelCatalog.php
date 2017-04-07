@@ -691,10 +691,11 @@ class ModelCatalog {
                 $text.='</a>';
                 $text.='<button class="button_b"  data-idproduct="' . $product['id'] . '" ><i class="fa fa-shopping-cart fa-lg"></i>&nbsp;&nbsp;&nbsp;&nbsp; В корзину</button>';
                 $text.='</div>';
-                echo $text;
+                $res.=$text;
             }
+            return $res;
         } else {
-            echo '<br><br><br><h2>Товара еще нет в данной категории!!!</h2><br><br><br>';
+            return '<br><br><br><h2>Товара еще нет в данной категории!!!</h2><br><br><br>';
         }
     }
 

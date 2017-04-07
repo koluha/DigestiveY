@@ -108,6 +108,7 @@ class CatalogController extends Controller {
                 $this->render('index', array('data' => $data, 'pagin' => $pag));
             }
         } catch (Exception $ex) {
+            //$this->render('index', array('error'=>'Ошибка получения данных продуктов'));
             $ex->getMessage('Ошибка получения данных продуктов');
         }
     }
@@ -135,9 +136,6 @@ class CatalogController extends Controller {
 
             if ($data_filrets) { //Если пришли данные фильтра
                 /* Входные данные  * Array([0] => brand&Bruichladdich [1] => country&Scotland) */
-
-
-
 
                 foreach ($data_filrets as $name => $var) {
                     //Извлеч из строки строки массива - название фильтра и его значение в переменные 
@@ -179,8 +177,10 @@ class CatalogController extends Controller {
 
                 //echo '<pre>';
                // print_r($list);
-                $view = $obj_catalog->ViewProduct($list);
-                echo $view;
+                $product_s=$obj_catalog->ViewProduct($list);
+               // echo $product_s;
+                $view=array('product'=>$product_s,'res2'=>'hello2');
+                echo json_encode($view);
 
                 // Завершаем приложение
                 Yii::app()->end();
@@ -188,8 +188,10 @@ class CatalogController extends Controller {
                 $list = $obj_catalog->AjaxAllListProduct($id_catagory);
                // echo '<pre>';
                // print_r($list);
-                $view = $obj_catalog->ViewProduct($list);
-                echo $view;
+                $product_s =$obj_catalog->ViewProduct($list) ;
+                
+                $view=array('product'=>$product_s,'res2'=>'hello2');
+                echo json_encode($view);
                 Yii::app()->end();
             }
         }

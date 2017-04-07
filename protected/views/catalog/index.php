@@ -25,11 +25,11 @@
         /* Функция открывает блок фильтра и меняет класс у блока товара*/
 
         function openbox(id, toggler, right_block) {
-            
-        
-        var div = document.getElementById(id);
+
+
+            var div = document.getElementById(id);
             var div_right = document.getElementById(right_block);
-            
+
             if (div.style.display == 'block') {
                 div.style.display = 'none';
                 toggler.innerHTML = '<i class="fa fa-tasks fa-lg" aria-hidden="true"></i>&nbsp; показать фильтр';
@@ -69,26 +69,29 @@
             //console.log(JSON.stringify(data));
             //!!Нужно знать id категорию 
             //Имитация загрузки css 
-            $("#cat_loader").css({display: "block"});
+            $(".prod_block_filtr").fadeOut()
             var startTime = new Date().getTime(); // засекаем время начала запроса
             $.ajax({
                 type: 'POST',
                 url: "<?php echo Yii::app()->createUrl('Catalog/FilterAjax') ?>",
                 data: {data_filrets: data, url_category: url_category},
                 success: function(d) {
+                    var data1 = jQuery.parseJSON(d);
+                   
+                    console.log(d);
                     var requestDuration = new Date().getTime() - startTime; // вычисляем продолжительность запроса
                     if (requestDuration < 500) { // если выполнился меньше чем за секунду
                         clearTimeout(timeout);
                         timeout = setTimeout(function() { // устанавливаем таймер
-                            $("#cat_loader").css({display: "none"});
-                            $('.prod_block_filtr').empty().append(d);
-                            $('.page-numbers').empty();
+                             $('.prod_block_filtr').empty().append(data1.product);
+                             $(".prod_block_filtr").fadeIn();
+                             $('.page-numbers').empty();
 
 
-                        }, 500 - requestDuration); // на время оставшиеся до секунды
+                        }, 300 - requestDuration); // на время оставшиеся до секунды
                     } else {
-                        $("#cat_loader").css({display: "none"}); // иначе сразу скрываем лоадер
-                        $('.prod_block_filtr').empty().append(d);
+                        $('.prod_block_filtr').empty().append(data1.product);
+                        $(".prod_block_filtr").fadeIn();            
                         $('.page-numbers').empty();
                     }
                 }
@@ -310,9 +313,9 @@ if ($data['categories']) {
         </ul>
             -->
     </div>
-<div id="cat_loader"></div>
+    <div id="cat_loader"></div>
     <div id="right_block" class="prod_block">
-        
+
 
         <?php
         $this->renderPartial('_product', array('products' => $data['products']));
