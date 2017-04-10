@@ -249,8 +249,8 @@ class ModelCatalog {
         return $res;
     }
 
-    public function AjaxAllListProduct($id_catalog){
-           $sql = "SELECT  
+    public function AjaxAllListProduct($id_catalog) {
+        $sql = "SELECT  
                             p.id,
                             p.article,
                             p.key_group_1,
@@ -272,7 +272,7 @@ class ModelCatalog {
                          LEFT JOIN tb_f_fortress AS f_f ON f_f.id=p.f_id_fortress
                          LEFT JOIN tb_f_volume AS f_v ON f_v.id=p.f_id_volume
                         WHERE c.parent_id=" . $id_catalog . " OR c.id=" . $id_catalog . "  OR key_group_3=" . $id_catalog . " ORDER BY i_old_price desc";
-           $res = Yii::app()->db->createCommand($sql)->queryAll();
+        $res = Yii::app()->db->createCommand($sql)->queryAll();
         return $res;
     }
 
@@ -280,7 +280,7 @@ class ModelCatalog {
     //catal - id категорий
     //data_filter - массив('имя фильтра'=>'значение')
     public function AjaxListProduct($catal, $test_where_filter) {
-        
+
         $sql = "SELECT  
                     c.id as c_id,
                     c.parent_id,
@@ -610,13 +610,106 @@ class ModelCatalog {
         }
     }
     
-    static function ViewProduct($array){
-          if (!empty($array)) {
+    
+        //Принимает массив полученных фильтров
+        //arr это массив полученных фильтров
+        // Для простановке чекбокосов после обновления
+        static function array_key_name($in_key,$in_value,$array){
             
+            $array[0]=array('brand'=>'Metaxa',
+                            'brand'=>'"Remy_Martin"');
+            
+            
+            
+            $flag=0;
+            foreach ($array as $key => $value) {
+                if (($in_key==$key) AND ($in_value==$value)){
+                    $flag++;
+                }
+            }
+            $res=($flag==1)?'checked':'';
+            return $res;
+         }
+
+
+
+
+        static function AjaxViewFilter($key_category,$arr) {
+        
+        //Нужна функция которая ищет в массиве ключ и имя и возвращает 
+        
+        
+        
+        $filters=  self::listFilters($key_category);
+        $array_filters= self::list_filter();
+        if ($filters) {
+            $text = '';
+            foreach ($array_filters as $key => $value) {
+                if (isset($filters[$key])) {
+                    $text.='<li>
+                    <button  class="filtr_ul_button">
+                        <span><i class="fa fa-caret-down" aria-hidden="true"></i>&nbsp;&nbsp;' . $value . '</span>
+                    </button>  
+                    <ul class="filter_options">';
+
+                    foreach ($filters[$key] as $filtr) {
+                        $text.= '<li>
+                            <label>
+                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '" checked="' . self::array_key_name($key,$filtr['filter_url'],$arr). '">
+                                <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
+                            </label>
+                        </li>';
+                    }
+
+                    $text.= '</ul></li>';
+                }
+            }
+            return $text;
+        } else {
+            $text.='Данных фильтра нет';
+            return $text;
+        }
+    }
+    
+
+    //Принимает массив полученных фильтров
+    static function ViewFilter($filters, $array_filters) {
+        if ($filters) {
+            $text = '';
+            foreach ($array_filters as $key => $value) {
+                if (isset($filters[$key])) {
+                    $text.='<li>
+                    <button  class="filtr_ul_button">
+                        <span><i class="fa fa-caret-down" aria-hidden="true"></i>&nbsp;&nbsp;' . $value . '</span>
+                    </button>  
+                    <ul class="filter_options">';
+
+                    foreach ($filters[$key] as $filtr) {
+                        $text.= '<li>
+                            <label>
+                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '">
+                                <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
+                            </label>
+                        </li>';
+                    }
+
+                    $text.= '</ul></li>';
+                }
+            }
+            return $text;
+        } else {
+            $text.='Данных фильтра нет';
+            return $text;
+        }
+    }
+
+    static function ViewProduct($array) {
+        if (!empty($array)) {
+
             //echo '<pre>';
             //print_r($data);
             foreach ($array as $product) {
-                               
+
                 $url = Yii::app()->createUrl('product', array('url' => $product['t_url']));
 
                 $text = '<div class="cont_pr">';
@@ -662,8 +755,8 @@ class ModelCatalog {
 
                 $text.='<div class="price">' . $product['i_price'] . ' руб</div>';
                 $text.='<div class="flash">';
-                
-                
+
+
                 if ($product['i_old_price'] != 0) {
                     $text.='<div class="label label_red">';
                     $pr = intval($product['i_price'] * 100 / $product['i_old_price']);
@@ -672,21 +765,21 @@ class ModelCatalog {
                     $text.='<div class="discount__bottom">Скидка</div>';
                     $text.='</div>';
                 }
-                 if ($product['i_popular'] != 0) {
-                     $text.='<div class="label label_green">';
-                     $text.='<div class="l_popular">Популярное</div>';
-                     $text.='</div>';
-                 }
-                
-                 if ($product['i_limitedly'] != 0) {
-                     $text.='<div class="label label_yelow">';
-                     $text.='<div class="l_limit">Ограниченное</div>';
-                     $text.=' <div class="l2_limit">количество</div>';
-                     $text.='</div>';
-                 }
-                
-               
-                
+                if ($product['i_popular'] != 0) {
+                    $text.='<div class="label label_green">';
+                    $text.='<div class="l_popular">Популярное</div>';
+                    $text.='</div>';
+                }
+
+                if ($product['i_limitedly'] != 0) {
+                    $text.='<div class="label label_yelow">';
+                    $text.='<div class="l_limit">Ограниченное</div>';
+                    $text.=' <div class="l2_limit">количество</div>';
+                    $text.='</div>';
+                }
+
+
+
                 $text.='</div>';
                 $text.='</a>';
                 $text.='<button class="button_b"  data-idproduct="' . $product['id'] . '" ><i class="fa fa-shopping-cart fa-lg"></i>&nbsp;&nbsp;&nbsp;&nbsp; В корзину</button>';

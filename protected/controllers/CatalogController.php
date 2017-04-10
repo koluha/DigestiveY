@@ -134,6 +134,7 @@ class CatalogController extends Controller {
             $obj_catalog = new ModelCatalog;
             $id_catagory = $obj_catalog->get_id($url_category); //id категорий
 
+            //Получание вида для каталога продуктов
             if ($data_filrets) { //Если пришли данные фильтра
                 /* Входные данные  * Array([0] => brand&Bruichladdich [1] => country&Scotland) */
 
@@ -175,22 +176,27 @@ class CatalogController extends Controller {
                     $list = $obj_catalog->AjaxListProduct($id_catagory, $sql_where);
                 }
 
-                //echo '<pre>';
-               // print_r($list);
+               //Получить Вид списка продукта
                 $product_s=$obj_catalog->ViewProduct($list);
-               // echo $product_s;
-                $view=array('product'=>$product_s,'res2'=>'hello2');
+                
+                
+                //id группы, выбранные фильтры
+                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory,$arr);
+                
+                $view=array('product'=>$product_s,'filter'=>$filter_s, 'test1'=>$arr);
+                
                 echo json_encode($view);
 
                 // Завершаем приложение
                 Yii::app()->end();
             } else {
+                //Поучить полный список продуктов
                 $list = $obj_catalog->AjaxAllListProduct($id_catagory);
-               // echo '<pre>';
-               // print_r($list);
                 $product_s =$obj_catalog->ViewProduct($list) ;
                 
-                $view=array('product'=>$product_s,'res2'=>'hello2');
+                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory);
+                
+                $view=array('product'=>$product_s,'filter'=>$filter_s, 'test1'=>$arr);
                 echo json_encode($view);
                 Yii::app()->end();
             }

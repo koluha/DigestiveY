@@ -46,9 +46,14 @@
 
         /*чек боксы*/
         /*Отловим событие изменения чек бокса */
-        $("input[name='param_filter[]']").change(function() {
-            submitFilter();
+        
+        $('body').on('change', '.filter_ul', function() {
+                 submitFilter();
         });
+        
+        //$("input[name='param_filter[]']").change(function() {
+        //    submitFilter();
+        //});
 
         var timeout;
         function submitFilter() {
@@ -78,7 +83,7 @@
                 success: function(d) {
                     var data1 = jQuery.parseJSON(d);
                    
-                    console.log(d);
+                    console.log(data1.test1);
                     var requestDuration = new Date().getTime() - startTime; // вычисляем продолжительность запроса
                     if (requestDuration < 500) { // если выполнился меньше чем за секунду
                         clearTimeout(timeout);
@@ -86,6 +91,7 @@
                              $('.prod_block_filtr').empty().append(data1.product);
                              $(".prod_block_filtr").fadeIn();
                              $('.page-numbers').empty();
+                             $('.filter_ul').empty().append(data1.filter);
 
 
                         }, 300 - requestDuration); // на время оставшиеся до секунды
@@ -93,6 +99,8 @@
                         $('.prod_block_filtr').empty().append(data1.product);
                         $(".prod_block_filtr").fadeIn();            
                         $('.page-numbers').empty();
+                        $('.filter_ul').empty();
+                        $('.filter_ul').empty().append(data1.filter);
                     }
                 }
             });
@@ -167,16 +175,20 @@ if ($data['categories']) {
 <div class="prod_items clearfix">
     <div id="filter_block" class="filtr_block">
         <div class="h_filtr">Параметры фильтра</div>
+        
         <ul class="filter_ul">
             <?php
             //В сессию записать ид категорий, и получить данные фильтра этой категорий
-            $filters = ModelCatalog::listFilters(Yii::app()->session['filter_side']);
+            $obq_filter=new ModelCatalog();
+            $filters = $obq_filter->listFilters(Yii::app()->session['filter_side']);
+            //Получаем Массив всех фильтров
+            $array_filters = $obq_filter->list_filter();
+            
+            $view_filter=$obq_filter->ViewFilter($filters, $array_filters);
+            echo $view_filter;
 
-            //Получаем массив всех фильтров
-            $list_filtr = ModelCatalog::list_filter();
 
-
-            foreach ($list_filtr as $key => $value) {
+          /*  foreach ($array_filters as $key => $value) {
 
                 if (isset($filters[$key])) {
                     echo '<li>
@@ -196,7 +208,9 @@ if ($data['categories']) {
 
                     echo '</ul></li>';
                 }
-            }
+            }*/
+            
+            
             ?>
 
 
