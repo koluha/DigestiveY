@@ -3,7 +3,8 @@
 class ModelCatalog {
 
     private $id; //id выбранной категорий
-
+   
+    
     #Функция определит уровень вложенности 
     #Вернет уроверь вложенности 1/2/3
 
@@ -387,19 +388,11 @@ class ModelCatalog {
         return $res;
     }
 
-//Получить все фильтры имеющие эти категории товаров
-    static function listFilters($key_category) {
-        //Будет 15 запосов по каждому фильтру
-        //$brand=self::filter_brand($key_category);
-        //$res['f_brand'] = $brand;
-        //$res['f_brand']['count']=  count($brand);
-        $res = self::filter_all($key_category);
-        return $res;
-    }
-
+    //Получить все фильтры имеющие эти категории товаров
     //Боковое фильтры получение
-    static function filter_all($key_category) {
-
+    //Updated_count передать часть sql текст для уже выбранных фильтров  
+    public function listFilters($key_category, $updated_count) {
+        
         //Получаем список брендов всех
         $data = self::list_filter();
 
@@ -421,19 +414,38 @@ class ModelCatalog {
                 //Тут получим для каждого значения фильтра кол-во товаров имеющихся 
                 //Если не найдены товары фильров вывода не будет
                 foreach ($filters as $value) {
-
-                    $sql = "SELECT COUNT(filter.url)
+                       $sql_updated=$updated_count;
+                        $sql = "SELECT COUNT($tb_filter.url)
                                         FROM tb_catalog as c 
                                             INNER JOIN tb_product as p ON p.key_group_2 = c.id 
-                                             INNER JOIN tb_f_$tb_filter as filter  ON p.f_id_$tb_filter = filter.id
-                                    WHERE (c.parent_id=$key_category OR c.id=$key_category) AND filter.url='{$value['filter_url']}'";
-
+                                             LEFT JOIN tb_f_brand AS brand ON brand.id=p.f_id_brand 
+                                             LEFT JOIN tb_f_country AS country ON country.id=p.f_id_country 
+                                             LEFT JOIN tb_f_region AS region ON region.id=p.f_id_region 
+                                             LEFT JOIN tb_f_type AS type ON type.id=p.f_id_type 
+                                             LEFT JOIN tb_f_class AS class ON class.id=p.f_id_class 
+                                             LEFT JOIN tb_f_alcohol AS alcohol ON alcohol.id=p.f_id_alcohol 
+                                             LEFT JOIN tb_f_taste AS taste ON taste.id=p.f_id_taste 
+                                             LEFT JOIN tb_f_sugar AS sugar ON sugar.id=p.f_id_sugar 
+                                             LEFT JOIN tb_f_grape_sort AS grape_sort ON grape_sort.id=p.f_id_grape_sort 
+                                             LEFT JOIN tb_f_vintage_year AS vintage_year ON vintage_year.id=p.f_id_vintage_year 
+		                             LEFT JOIN tb_f_color AS color ON color.id=p.f_id_color 
+                                             LEFT JOIN tb_f_excerpt AS excerpt ON excerpt.id=p.f_id_excerpt 
+                                             LEFT JOIN tb_f_fortress AS fortress ON fortress.id=p.f_id_fortress
+                                             LEFT JOIN tb_f_volume AS volume ON volume.id=p.f_id_volume
+                                             LEFT JOIN tb_f_packaging AS packaging ON packaging.id=p.f_id_packaging    
+                                    WHERE (c.parent_id=$key_category OR c.id=$key_category) AND $tb_filter.url='{$value['filter_url']}' $sql_updated";
+                   
+                   // echo $sql;
                     $count = Yii::app()->db->createCommand($sql)->queryScalar();
 
-                    // $res[$tb_filter][$var]=$count;
 
+                    
+                  // echo $value['filter_url'].'=='.$tb_filter.'<br>';
+                    
                     $res[$tb_filter][] = array('filter_title' => $value['filter_title'],
                         'filter_url' => $value['filter_url'],
+                        'active1'=>$tb_filter,
+                        'active2'=>$value['filter_url'],
                         'count' => $count);
                 }
                 //Переберем кол-во товаров этого фильтра
@@ -468,25 +480,6 @@ class ModelCatalog {
         return $data;
     }
 
-//Получить все фильтры имеющие эти категории товаров
-    static function OLDlistFilters($key_category) {
-        $sql = "SELECT 
-                    psv.id as id_spec,
-                    psv.name as name_spec,
-                CASE
-                    WHEN (sv.val_text!='')  THEN   sv.val_text
-                    WHEN sv.val_int         THEN   sv.val_int
-                    WHEN sv.val_float       THEN   sv.val_float
-                END as val_spec
-                FROM tb_catalog as c
-                    INNER JOIN tb_product as p ON p.key_catalog = c.id
-                    INNER JOIN tb_link as l  ON p.id = l.key_product
-                    INNER JOIN tb_spec_value as sv  ON sv.id = l.key_spec_value
-                    INNER JOIN tb_product_spec as psv  ON psv.id = sv.key_prod_spec
-                WHERE c.parent_id=$key_category OR c.id=$key_category ;";
-        $res = Yii::app()->db->createCommand($sql)->queryAll();
-        return $res;
-    }
 
 //Функция возвращает дерево для хлебных крошек
     public function free($id) {
@@ -609,39 +602,20 @@ class ModelCatalog {
             return FALSE;
         }
     }
-    
-    
-        //Принимает массив полученных фильтров
-        //arr это массив полученных фильтров
-        // Для простановке чекбокосов после обновления
-        static function array_key_name($in_key,$in_value,$array){
-            
-            $array[0]=array('brand'=>'Metaxa',
-                            'brand'=>'"Remy_Martin"');
-            
-            
-            
-            $flag=0;
-            foreach ($array as $key => $value) {
-                if (($in_key==$key) AND ($in_value==$value)){
-                    $flag++;
-                }
-            }
-            $res=($flag==1)?'checked':'';
-            return $res;
-         }
+
+    //Принимает массив полученных фильтров
+    //arr это массив полученных фильтров
+    // Для простановке чекбокосов после обновления
 
 
 
 
-        static function AjaxViewFilter($key_category,$arr) {
-        
+
+    static function AjaxViewFilter($key_category, $updated_count) {
+
         //Нужна функция которая ищет в массиве ключ и имя и возвращает 
-        
-        
-        
-        $filters=  self::listFilters($key_category);
-        $array_filters= self::list_filter();
+        $filters = self::listFilters($key_category,$updated_count);
+        $array_filters = self::list_filter();
         if ($filters) {
             $text = '';
             foreach ($array_filters as $key => $value) {
@@ -655,7 +629,7 @@ class ModelCatalog {
                     foreach ($filters[$key] as $filtr) {
                         $text.= '<li>
                             <label>
-                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '" checked="' . self::array_key_name($key,$filtr['filter_url'],$arr). '">
+                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '" >
                                 <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
                             </label>
                         </li>';
@@ -670,7 +644,6 @@ class ModelCatalog {
             return $text;
         }
     }
-    
 
     //Принимает массив полученных фильтров
     static function ViewFilter($filters, $array_filters) {

@@ -16,10 +16,11 @@
         $css->registerCssFile(CHtml::asset(Yii::app()->basePath . '/../static/libs/font-awesome-4.6.1/css/font-awesome.min.css', true));
         $css->registerCssFile(CHtml::asset(Yii::app()->basePath . '/../static/css/main.css', true));
 
-        $css->registerScriptFile(CHtml::asset(Yii::app()->basePath . '/../static/js/command.js', true), CClientScript::POS_HEAD);
+       
         $css->registerScriptFile(CHtml::asset(Yii::app()->basePath . '/../static/js/inuser.js', true), CClientScript::POS_HEAD);
         $css->registerScriptFile(CHtml::asset(Yii::app()->basePath . '/../static/js/jquery.query-object.js', true), CClientScript::POS_HEAD);
         $css->registerScriptFile(CHtml::asset(Yii::app()->basePath . '/../static/libs/jquery-cookie-master/src/jquery.cookie.js', true));
+        $css->registerScriptFile(CHtml::asset(Yii::app()->basePath . '/../static/js/command.js', true), CClientScript::POS_HEAD);
         $css->registerPackage('jquery');
         $css->registerPackage('jquery.ui');
         ?>

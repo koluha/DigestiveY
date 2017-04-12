@@ -127,16 +127,21 @@ class CatalogController extends Controller {
         }
     }
 
+    //Filter action
     public function actionFilterAjax() {
         if (Yii::app()->request->isAjaxRequest) {
             $data_filrets = $_POST['data_filrets'];
             $url_category = $_POST['url_category'];
+             //какая группа чекин
+            $data_name_filter=$_POST['data_name_filter_in'];
+            
             $obj_catalog = new ModelCatalog;
             $id_catagory = $obj_catalog->get_id($url_category); //id категорий
 
             //Получание вида для каталога продуктов
             if ($data_filrets) { //Если пришли данные фильтра
-                /* Входные данные  * Array([0] => brand&Bruichladdich [1] => country&Scotland) */
+                /* Входные данные  * Array([0] => brand&Bruichladdich 
+                                           [1] => country&Scotland) */
 
                 foreach ($data_filrets as $name => $var) {
                     //Извлеч из строки строки массива - название фильтра и его значение в переменные 
@@ -166,11 +171,13 @@ class CatalogController extends Controller {
                         }
                     }
                     if (${'sql_' . $name_filter}) {
-
                         $sql_where.=' AND ';
                         $sql_where.= ${'sql_' . $name_filter} ? '(' . ${'sql_' . $name_filter} . ')' : ' ';
                     }
-                    // выходе часть строки sql после where 
+                    // выходе часть строки sql после where ()
+                    //WHERE (c.parent_id=1 OR c.id=1 OR key_group_3=1) 
+                    //AND (brand.url='Bruichladdich') 
+                    //AND (packaging.url='Gift_box_with_2_glass' OR packaging.url='_Metal_tube')
                 }
                 if (!empty($sql_where)) {
                     $list = $obj_catalog->AjaxListProduct($id_catagory, $sql_where);
@@ -181,9 +188,9 @@ class CatalogController extends Controller {
                 
                 
                 //id группы, выбранные фильтры
-                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory,$arr);
-                
-                $view=array('product'=>$product_s,'filter'=>$filter_s, 'test1'=>$arr);
+                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory, $sql_where);
+
+                $view=array('product'=>$product_s,'filter'=>$filter_s,'test'=>$sql_where);
                 
                 echo json_encode($view);
 
@@ -194,14 +201,15 @@ class CatalogController extends Controller {
                 $list = $obj_catalog->AjaxAllListProduct($id_catagory);
                 $product_s =$obj_catalog->ViewProduct($list) ;
                 
-                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory);
+                $filter_s=$obj_catalog->AjaxViewFilter($id_catagory,'');
                 
-                $view=array('product'=>$product_s,'filter'=>$filter_s, 'test1'=>$arr);
+                $view=array('product'=>$product_s,'filter'=>$filter_s, 'test'=>'привет2');
                 echo json_encode($view);
                 Yii::app()->end();
             }
         }
     }
+    //End Filter action
 
     //Возвращает разобранную строку
     static function string_filter($string, $flag, $position) {

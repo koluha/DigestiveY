@@ -1,5 +1,69 @@
 <script>
+
+    function submitFilter(data_name_filter) {
+    var timeout;
+
+    //console.log(data_name_filter);
+
+    Checkes = $("input[name='param_filter[]']");
+
+    //Получить выбранную категорию из url
+    var url_category = '<?php echo Yii::app()->getRequest()->getPathInfo() ?>'
+    var data = new Array();  //Массив data
+    i = 0;
+    Checkes.each(function() {  //найти все checked
+        if ($(this).is(':checked')) {
+            var attr_value = $(this).val();
+            var attr_name_filter = $(this).attr('data-name-filter');
+            data[i] = attr_name_filter + '&' + attr_value; //запись в массив (имя фильтра - значение)
+            i++;
+
+        }
+    });
+    //console.log(JSON.stringify(data));
+    //!!Нужно знать id категорию 
+    //Имитация загрузки css 
+    $(".prod_block_filtr").fadeOut()
+    var startTime = new Date().getTime(); // засекаем время начала запроса
+    $.ajax({
+    type: 'POST',
+            url: "<?php echo Yii::app()->createUrl('Catalog/FilterAjax') ?>",
+            data: {data_filrets: data, url_category: url_category , data_name_filter_in: data_name_filter },
+            success: function(d) {
+                var data1 = jQuery.parseJSON(d);
+
+                //  console.log(data1.test);
+                var requestDuration = new Date().getTime() - startTime; // вычисляем продолжительность запроса
+                if (requestDuration < 500) { // если выполнился меньше чем за секунду
+                    clearTimeout(timeout);
+                    timeout = setTimeout(function() { // устанавливаем таймер
+                        $('.prod_block_filtr').empty().append(data1.product);
+                        $(".prod_block_filtr").fadeIn();
+                        $('.page-numbers').empty();
+                        $('.filter_ul').empty().append(data1.filter);
+                    }, 300 - requestDuration); // на время оставшиеся до секунды
+                } else {
+                    $('.prod_block_filtr').empty().append(data1.product);
+                    $(".prod_block_filtr").fadeIn();
+                    $('.page-numbers').empty();
+                    $('.filter_ul').empty().append(data1.filter);
+                }
+            }
+    });
+    }
+    ;
+
     $(document).ready(function() {
+
+
+        $('body').on('change', ".filter_options input[name='param_filter[]']", function() {
+            //Выбранное data-name-filter фильтра не менять класс выше  
+            var data_name_filter = $(this).attr('data-name-filter');
+            submitFilter(data_name_filter);
+        });
+
+
+
         $('.button_b').click(function() {
             var id_pr = $(this).attr('data-idproduct');
             // console.log(id_pr);
@@ -44,68 +108,18 @@
         }
 
 
-        /*чек боксы*/
-        /*Отловим событие изменения чек бокса */
-        
-        $('body').on('change', '.filter_ul', function() {
-                 submitFilter();
-        });
-        
+
+
         //$("input[name='param_filter[]']").change(function() {
         //    submitFilter();
         //});
 
-        var timeout;
-        function submitFilter() {
-            Checkes = $("input[name='param_filter[]']");
-            //Получить выбранную категорию из url
-            var url_category = '<?php echo Yii::app()->getRequest()->getPathInfo() ?>'
-            var data = new Array();  //Массив data
-            i = 0;
-            Checkes.each(function() {  //найти все checked
-                if ($(this).is(':checked')) {
-                    var attr_value = $(this).val();
-                    var attr_name_filter = $(this).attr('data-name-filter');
-                    data[i] = attr_name_filter + '&' + attr_value; //запись в массив (имя фильтра - значение)
-                    i++;
-
-                }
-            });
-            //console.log(JSON.stringify(data));
-            //!!Нужно знать id категорию 
-            //Имитация загрузки css 
-            $(".prod_block_filtr").fadeOut()
-            var startTime = new Date().getTime(); // засекаем время начала запроса
-            $.ajax({
-                type: 'POST',
-                url: "<?php echo Yii::app()->createUrl('Catalog/FilterAjax') ?>",
-                data: {data_filrets: data, url_category: url_category},
-                success: function(d) {
-                    var data1 = jQuery.parseJSON(d);
-                   
-                    console.log(data1.test1);
-                    var requestDuration = new Date().getTime() - startTime; // вычисляем продолжительность запроса
-                    if (requestDuration < 500) { // если выполнился меньше чем за секунду
-                        clearTimeout(timeout);
-                        timeout = setTimeout(function() { // устанавливаем таймер
-                             $('.prod_block_filtr').empty().append(data1.product);
-                             $(".prod_block_filtr").fadeIn();
-                             $('.page-numbers').empty();
-                             $('.filter_ul').empty().append(data1.filter);
+        /*чек боксы*/
+        /*Отловим событие изменения чек бокса */
 
 
-                        }, 300 - requestDuration); // на время оставшиеся до секунды
-                    } else {
-                        $('.prod_block_filtr').empty().append(data1.product);
-                        $(".prod_block_filtr").fadeIn();            
-                        $('.page-numbers').empty();
-                        $('.filter_ul').empty();
-                        $('.filter_ul').empty().append(data1.filter);
-                    }
-                }
-            });
-        }
-        ;
+
+
 
 
         /*работа сортировки, если уже выбрана страница дальше первой то скидываем снова на первую*/
@@ -175,42 +189,42 @@ if ($data['categories']) {
 <div class="prod_items clearfix">
     <div id="filter_block" class="filtr_block">
         <div class="h_filtr">Параметры фильтра</div>
-        
+
         <ul class="filter_ul">
             <?php
             //В сессию записать ид категорий, и получить данные фильтра этой категорий
-            $obq_filter=new ModelCatalog();
-            $filters = $obq_filter->listFilters(Yii::app()->session['filter_side']);
+            $obq_filter = new ModelCatalog();
+            $filters = $obq_filter->listFilters(Yii::app()->session['filter_side'], '');
+
+
             //Получаем Массив всех фильтров
             $array_filters = $obq_filter->list_filter();
-            
-            $view_filter=$obq_filter->ViewFilter($filters, $array_filters);
+
+            $view_filter = $obq_filter->ViewFilter($filters, $array_filters);
             echo $view_filter;
 
 
-          /*  foreach ($array_filters as $key => $value) {
+            /*  foreach ($array_filters as $key => $value) {
 
-                if (isset($filters[$key])) {
-                    echo '<li>
-                    <button  class="filtr_ul_button">
-                        <span><i class="fa fa-caret-down" aria-hidden="true"></i>&nbsp;&nbsp;' . $value . '</span>
-                    </button>  
-                    <ul class="filter_options">';
+              if (isset($filters[$key])) {
+              echo '<li>
+              <button  class="filtr_ul_button">
+              <span><i class="fa fa-caret-down" aria-hidden="true"></i>&nbsp;&nbsp;' . $value . '</span>
+              </button>
+              <ul class="filter_options">';
 
-                    foreach ($filters[$key] as $filtr) {
-                        echo '<li>
-                            <label>
-                                <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '">
-                                <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
-                            </label>
-                        </li>';
-                    }
+              foreach ($filters[$key] as $filtr) {
+              echo '<li>
+              <label>
+              <input type="checkbox" data-name-filter="' . $key . '" name="param_filter[]" value="' . $filtr['filter_url'] . '">
+              <span class="name"> <font>' . $filtr['filter_title'] . '</font><font class="fil_label">&nbsp;(' . $filtr['count'] . ')</font></span>
+              </label>
+              </li>';
+              }
 
-                    echo '</ul></li>';
-                }
-            }*/
-            
-            
+              echo '</ul></li>';
+              }
+              } */
             ?>
 
 
@@ -260,12 +274,12 @@ if ($data['categories']) {
 
 
             <?php
-            //Формируем массив для вывода
-            //    foreach ($filters as $key => $filtr) {
-            //        $endfilters[$filtr['name_spec']][] = array('val_id' => $filtr['id_spec'],
-            //             'val_spec' => $filtr['val_spec']);
-            //      }
-            //print_r($endfilters);
+//Формируем массив для вывода
+//    foreach ($filters as $key => $filtr) {
+//        $endfilters[$filtr['name_spec']][] = array('val_id' => $filtr['id_spec'],
+//             'val_spec' => $filtr['val_spec']);
+//      }
+//print_r($endfilters);
             /*
               if (!empty($data['products'])) {
               foreach ($endfilters as $key => $filters) {
